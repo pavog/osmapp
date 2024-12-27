@@ -43,6 +43,7 @@ export const RouteFloatingMenu = () => {
     routeSelectedIndex,
     getCurrentPath,
     setRouteIndexHovered,
+    isEditMode,
   } = useClimbingContext();
   const path = getCurrentPath();
   const machine = getMachine();
@@ -52,6 +53,8 @@ export const RouteFloatingMenu = () => {
       routes[routeSelectedIndex] &&
       pointSelectedIndex === getCurrentPath().length - 1) ||
     machine.currentStateName === 'editRoute';
+
+  const areCragPointsVisible = isEditMode;
   const isDoneVisible = machine.currentStateName === 'extendRoute';
   const isUndoVisible =
     machine.currentStateName === 'extendRoute' && path.length !== 0;
@@ -62,6 +65,15 @@ export const RouteFloatingMenu = () => {
   const onContinueClimbingRouteClick = useCallback(() => {
     machine.execute('extendRoute');
   }, [machine]);
+
+  const onMockPointsClick = useCallback(() => {
+    machine.execute('mockPoints');
+  }, [machine]);
+
+  const onMockPointsFinish = () => {
+    machine.execute('editRoute');
+  };
+
   const onDeletePoint = () => {
     machine.execute('deletePoint');
     setIsDeletePointDialogVisible(false);
@@ -118,6 +130,9 @@ export const RouteFloatingMenu = () => {
       if (e.key === 'e') {
         onContinueClimbingRouteClick();
       }
+      if (e.key === 'm') {
+        onMockPointsClick();
+      }
       if (isUndoVisible && e.key === 'z' && e.metaKey) {
         handleUndo(e);
       }
@@ -137,6 +152,7 @@ export const RouteFloatingMenu = () => {
     isUndoVisible,
     onContinueClimbingRouteClick,
     onFinishClimbingRouteClick,
+    onMockPointsClick,
     onPointTypeChange,
   ]);
 
@@ -239,6 +255,14 @@ export const RouteFloatingMenu = () => {
                     : t('climbingpanel.start')}
                 </Button>
               )}
+              {areCragPointsVisible &&
+                (machine.currentStateName === 'mockPoints' ? (
+                  <Button onClick={onMockPointsFinish}>
+                    Finish mock points
+                  </Button>
+                ) : (
+                  <Button onClick={onMockPointsClick}>Mock points</Button>
+                ))}
               {machine.currentStateName === 'pointMenu' && (
                 <Button
                   onClick={() => {
